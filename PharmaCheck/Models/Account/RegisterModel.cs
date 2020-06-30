@@ -1,4 +1,4 @@
-﻿namespace TaskAPI.Models.Account
+﻿namespace PharmaCheck.Models.Account
 {
     public struct RegisterModel
     {

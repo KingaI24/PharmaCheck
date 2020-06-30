@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PharmaCheck.Models;
+using PharmaCheck.Data;
 
 namespace PharmaCheck.Migrations
 {
-    [DbContext(typeof(SupplyChainContext))]
-    partial class SupplyChainContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(PharmaCheckContext))]
+    partial class PharmaCheckContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -218,7 +218,9 @@ namespace PharmaCheck.Migrations
             modelBuilder.Entity("PharmaCheck.Models.Address", b =>
                 {
                     b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -229,7 +231,12 @@ namespace PharmaCheck.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<long>("PharmId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("PharmId");
 
                     b.ToTable("Addresses");
                 });
@@ -281,19 +288,26 @@ namespace PharmaCheck.Migrations
 
             modelBuilder.Entity("PharmaCheck.Models.Supply", b =>
                 {
-                    b.Property<long>("PharmId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ProdId")
-                        .HasColumnType("bigint");
+                    b.Property<long>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("Discount")
                         .HasColumnType("int");
 
+                    b.Property<long>("PharmId")
+                        .HasColumnType("bigint");
+
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.HasKey("PharmId", "ProdId");
+                    b.Property<long>("ProdId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("PharmId");
 
                     b.HasIndex("ProdId");
 
@@ -354,8 +368,8 @@ namespace PharmaCheck.Migrations
             modelBuilder.Entity("PharmaCheck.Models.Address", b =>
                 {
                     b.HasOne("PharmaCheck.Models.Pharmacy", "Pharmacy")
-                        .WithOne("Address")
-                        .HasForeignKey("PharmaCheck.Models.Address", "Id")
+                        .WithMany("Addresses")
+                        .HasForeignKey("PharmId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

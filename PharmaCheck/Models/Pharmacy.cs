@@ -9,7 +9,7 @@ namespace PharmaCheck.Models
     {
         public long Id {get; set; }
         public string Name { get; set; }
-        public virtual Address Address { get; set; }
+        public virtual ICollection<Address> Addresses { get; set; }
         public virtual ICollection<Supply> Supplies { get; set; }
     }
 }

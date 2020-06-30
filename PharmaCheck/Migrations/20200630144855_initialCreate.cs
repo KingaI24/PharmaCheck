@@ -187,17 +187,19 @@ namespace PharmaCheck.Migrations
                 name: "Addresses",
                 columns: table => new
                 {
-                    Id = table.Column<long>(nullable: false),
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Description = table.Column<string>(nullable: true),
                     Latitude = table.Column<double>(nullable: false),
-                    Longitude = table.Column<double>(nullable: false)
+                    Longitude = table.Column<double>(nullable: false),
+                    PharmId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Addresses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Addresses_Pharmacies_Id",
-                        column: x => x.Id,
+                        name: "FK_Addresses_Pharmacies_PharmId",
+                        column: x => x.PharmId,
                         principalTable: "Pharmacies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -207,6 +209,8 @@ namespace PharmaCheck.Migrations
                 name: "Supplies",
                 columns: table => new
                 {
+                    id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ProdId = table.Column<long>(nullable: false),
                     PharmId = table.Column<long>(nullable: false),
                     Price = table.Column<double>(nullable: false),
@@ -214,7 +218,7 @@ namespace PharmaCheck.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Supplies", x => new { x.PharmId, x.ProdId });
+                    table.PrimaryKey("PK_Supplies", x => x.id);
                     table.ForeignKey(
                         name: "FK_Supplies_Pharmacies_PharmId",
                         column: x => x.PharmId,
@@ -228,6 +232,11 @@ namespace PharmaCheck.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Addresses_PharmId",
+                table: "Addresses",
+                column: "PharmId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -267,6 +276,11 @@ namespace PharmaCheck.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Supplies_PharmId",
+                table: "Supplies",
+                column: "PharmId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Supplies_ProdId",

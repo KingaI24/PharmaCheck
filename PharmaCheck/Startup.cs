@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using PharmaCheck.Models;
+using PharmaCheck.Data;
+using System.Text.Json.Serialization;
 
 namespace PharmaCheck
 {
@@ -29,7 +31,17 @@ namespace PharmaCheck
                 configuration.RootPath = "ClientApp/dist";
             });
 
-            services.AddDbContext<SupplyChainContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("SupplyChainDbConnectionString")));
+            services.AddDbContext<PharmaCheckContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("SupplyChainDbConnectionString")));
+
+            services
+                .AddControllers()
+                .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.IgnoreNullValues = true;
+                });
+
 
         }
 
@@ -69,6 +81,24 @@ namespace PharmaCheck
                 // see https://go.microsoft.com/fwlink/?linkid=864501
 
                 spa.Options.SourcePath = "ClientApp";
+
+                app.UseSpa(spa =>
+                {
+                    // To learn more about options for serving an Angular SPA from ASP.NET Core,
+                    // see https://go.microsoft.com/fwlink/?linkid=864501
+
+                    spa.Options.SourcePath = "wwwroot";
+
+                    //if (env.IsDevelopment())
+                    //{
+                    //    spa.UseAngularCliServer(npmScript: "start");
+                    //}
+                });
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                });
 
                 if (env.IsDevelopment())
                 {

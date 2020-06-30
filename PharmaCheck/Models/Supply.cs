@@ -9,6 +9,7 @@ namespace PharmaCheck.Models
 {
     public class Supply
     {
+        public long id { get; set; }
         public long ProdId { get; set; }
         public long PharmId { get; set; }
         public Product Product { get; set; }

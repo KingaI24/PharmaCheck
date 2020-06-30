@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using PharmaCheck.Models;
 
-namespace PharmaCheck.Models
+namespace PharmaCheck.Data
 {
-    public class SupplyChainContext : IdentityDbContext
+    public class PharmaCheckContext : IdentityDbContext
     {
-        public SupplyChainContext(DbContextOptions<SupplyChainContext> options)
+        public PharmaCheckContext(DbContextOptions<PharmaCheckContext> options)
             : base(options)
         { }
 
@@ -25,13 +22,13 @@ namespace PharmaCheck.Models
             modelBuilder.Entity<Supply>(supply =>
             {
                 supply
-                    .HasKey(t => new { t.PharmId, t.ProdId });
+                    .HasKey(t => t.id);
 
                 supply
                     .HasOne(pt => pt.Product)
                     .WithMany(p => p.Supplies)
                     .HasForeignKey(pt => pt.ProdId)
-                    .OnDelete(DeleteBehavior.Cascade); ;
+                    .OnDelete(DeleteBehavior.Cascade); 
 
                 supply
                     .HasOne(pt => pt.Pharmacy)
@@ -40,10 +37,10 @@ namespace PharmaCheck.Models
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<Pharmacy>()
-                .HasOne<Address>(s => s.Address)
-                .WithOne(ad => ad.Pharmacy)
-                .HasForeignKey<Address>(ad => ad.Id);
+            modelBuilder.Entity<Address>()
+                .HasOne<Pharmacy>(s => s.Pharmacy)
+                .WithMany(ad => ad.Addresses)
+                .HasForeignKey(s => s.PharmId);
         }
     }
 }

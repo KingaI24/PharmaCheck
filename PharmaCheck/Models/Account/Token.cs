@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TaskAPI.Models.Account
+namespace PharmaCheck.Models.Account
 {
     public class Token
     {
