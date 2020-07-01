@@ -68,7 +68,14 @@ namespace PharmaCheck.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(supply).State = EntityState.Modified;
+            if (supply.Stock == 0)
+            {
+                _context.Supplies.Remove(supply);
+            } else
+            {
+                _context.Entry(supply).State = EntityState.Modified;
+            }
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -86,36 +93,6 @@ namespace PharmaCheck.Controllers
             }
 
             return NoContent();
-
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest(ModelState);
-            //}
-
-            //if ((ProdId != supply.ProdId) && (PharmId != supply.PharmId))
-            //{
-            //    return BadRequest();
-            //}
-
-            //_context.Entry(supply).State = EntityState.Modified;
-
-            //try
-            //{
-            //    await _context.SaveChangesAsync();
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    if (!SupplyExists(ProdId, PharmId))
-            //    {
-            //        return NotFound();
-            //    }
-            //    else
-            //    {
-            //        throw;
-            //    }
-            //}
-
-            //return NoContent();
         }
 
         // POST: api/supply
@@ -129,18 +106,44 @@ namespace PharmaCheck.Controllers
         [HttpPost]
         public async Task<ActionResult<Supply>> PostSupply(Supply supply)
         {
-            _context.Supplies.Add(supply);
-            await _context.SaveChangesAsync();
+            if (!ProductPerPharmacyExists(supply.ProdId, supply.PharmId))
+            {
+                _context.Supplies.Add(supply);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetSupply", new { pharmid = supply.PharmId, prodid = supply.ProdId }, supply);
 
-            return CreatedAtAction("GetSupply", new { pharmid = supply.PharmId, prodid = supply.ProdId }, supply);
+            } else {
+                var entry = await _context.Supplies
+                    .Where(t => t.PharmId == supply.PharmId && t.ProdId == supply.ProdId)
+                    .FirstOrDefaultAsync();
+
+                entry.Stock = entry.Stock + supply.Stock ;
+                _context.Entry(entry).State = EntityState.Modified;
+                
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!SupplyExists(supply.id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return NoContent();
+            }
         }
 
         // DELETE: api/supply?prodid=5&pharmid=5
         /// <summary>
         /// Delete supply by id.
         /// </summary>
-        /// <param name="ProdId"></param>
-        /// <param name="PharmId"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult<Supply>> DeleteSupply(long id)
@@ -161,6 +164,11 @@ namespace PharmaCheck.Controllers
         {
             return _context.Supplies.Any(e => e.id == id);
             //return _context.Supplies.Any(e => e.PharmId == PharmId && e.ProdId == ProdId);
+        }
+
+        private bool ProductPerPharmacyExists(long PharmId, long ProdId)
+        {
+            return _context.Supplies.Any(e => e.PharmId == PharmId && e.ProdId == ProdId);
         }
     }
 }

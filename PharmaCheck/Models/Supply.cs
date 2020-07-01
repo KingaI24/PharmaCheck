@@ -16,5 +16,6 @@ namespace PharmaCheck.Models
         public Pharmacy Pharmacy { get; set; }
         public Double Price { get; set; }
         public int Discount { get; set; }
+        public int Stock { get; set; }
     }
 }
