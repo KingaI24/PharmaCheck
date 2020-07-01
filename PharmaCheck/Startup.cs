@@ -9,6 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using PharmaCheck.Models;
 using PharmaCheck.Data;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
+using System;
+using FluentValidation.AspNetCore;
 
 namespace PharmaCheck
 {
@@ -24,12 +29,6 @@ namespace PharmaCheck
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
-            // In production, the Angular files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/dist";
-            });
 
             services.AddDbContext<PharmaCheckContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("SupplyChainDbConnectionString")));
 
@@ -42,7 +41,35 @@ namespace PharmaCheck
                     options.JsonSerializerOptions.IgnoreNullValues = true;
                 });
 
+            services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "PharmacyCheck API",
+                    Description = "A simple example ASP.NET Core Web API",
+                    TermsOfService = new Uri("https://example.com/terms"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Kinga",
+                        Email = string.Empty,
+                        Url = new Uri("https://twitter.com/spboyer"),
+                    }
+                });
+
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+
+            });
+
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/dist";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,20 +79,18 @@ namespace PharmaCheck
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
             {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+                c.SwaggerEndpoint("swagger/v1/swagger.json", "My PharmacyCheck API V1");
+                c.RoutePrefix = "swagger";
+            });
+
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            if (!env.IsDevelopment())
-            {
-                app.UseSpaStaticFiles();
-            }
-
+            app.UseSpaStaticFiles();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -80,30 +105,12 @@ namespace PharmaCheck
                 // To learn more about options for serving an Angular SPA from ASP.NET Core,
                 // see https://go.microsoft.com/fwlink/?linkid=864501
 
-                spa.Options.SourcePath = "ClientApp";
+                spa.Options.SourcePath = "wwwroot";
 
-                app.UseSpa(spa =>
-                {
-                    // To learn more about options for serving an Angular SPA from ASP.NET Core,
-                    // see https://go.microsoft.com/fwlink/?linkid=864501
-
-                    spa.Options.SourcePath = "wwwroot";
-
-                    //if (env.IsDevelopment())
-                    //{
-                    //    spa.UseAngularCliServer(npmScript: "start");
-                    //}
-                });
-
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllers();
-                });
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseAngularCliServer(npmScript: "start");
-                }
+                //if (env.IsDevelopment())
+                //{
+                //    spa.UseAngularCliServer(npmScript: "start");
+                //}
             });
         }
     }

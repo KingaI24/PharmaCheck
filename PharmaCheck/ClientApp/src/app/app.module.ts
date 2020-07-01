@@ -10,6 +10,7 @@ import { HomeComponent } from './home/home.component';
 import { CounterComponent } from './counter/counter.component';
 import { FetchDataComponent } from './fetch-data/fetch-data.component';
 import { AngularMaterialModule } from './shared/angular-material.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
  
 
 @NgModule({
@@ -18,8 +19,7 @@ import { AngularMaterialModule } from './shared/angular-material.module';
     NavMenuComponent,
     HomeComponent,
     CounterComponent,
-    FetchDataComponent,
-    AngularMaterialModule
+    FetchDataComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -29,9 +29,12 @@ import { AngularMaterialModule } from './shared/angular-material.module';
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'counter', component: CounterComponent },
       { path: 'fetch-data', component: FetchDataComponent },
-    ])
+    ]),
+    AngularMaterialModule,
+    BrowserAnimationsModule
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+   exports: [AngularMaterialModule],
+   providers: [],
+   bootstrap: [AppComponent]
 })
 export class AppModule { }
