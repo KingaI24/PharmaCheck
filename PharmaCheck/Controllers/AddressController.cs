@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmaCheck.Data;
 using PharmaCheck.Models;
+using PharmaCheck.ViewModel.Collections;
+using PharmaCheck.ViewModels;
 
 namespace PharmaCheck.Controllers
 {
@@ -14,10 +17,12 @@ namespace PharmaCheck.Controllers
     public class AddressController : Controller
     {
         private readonly PharmaCheckContext _context;
+        private readonly IMapper _mapper;
 
-        public AddressController(PharmaCheckContext context)
+        public AddressController(PharmaCheckContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Address
@@ -26,28 +31,40 @@ namespace PharmaCheck.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Address>>> GetAddresses()
+        public async Task<ActionResult<IEnumerable<ShowAddressVM>>> GetAddresses()
         {
-            return await _context.Addresses.Include(t => t.Pharmacy).ToListAsync();
+            var addresses = await _context.Addresses
+                .Include(t => t.Pharmacy)
+                .ToListAsync();
+
+            var addressesDto = _mapper.Map<IEnumerable<ShowAddressVM>>(addresses);
+            return Ok(addressesDto);
         }
 
         // GET: api/Address/5
         /// <summary>
-        /// Find address based on id.
+        /// Find addresses of same franchise.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Address>> GetAddress(long id)
+        public async Task<ActionResult<ShowAddressVM>> GetAddressesByPharmacyId(long id)
         {
-            var address = await _context.Addresses.Include(t => t.Pharmacy).FirstOrDefaultAsync(t => t.Id == id);
+            IQueryable<Address> result = _context.Addresses;
 
-            if (address == null)
+            if (result == null)
             {
                 return NotFound();
+            } else {
+                result = result.Where(f => f.PharmId == id);
             }
 
-            return address;
+            var addresses = await result
+                .Include(t => t.Pharmacy)
+                .ToListAsync();
+
+            var addressesDto = _mapper.Map<IEnumerable<ShowAddressVM>>(addresses);
+            return Ok(addressesDto);
         }
 
         // PUT: api/Address/5
@@ -55,17 +72,19 @@ namespace PharmaCheck.Controllers
         /// Update address. 
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="address"></param>
+        /// <param name="addressDto"></param>
         /// <returns></returns>
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAddress(long id, Address address)
+        public async Task<IActionResult> PutAddress(long id, InsertAddressVM addressDto)
         {
-            if (id != address.Id)
+            if (id != addressDto.Id)
             {
                 return BadRequest();
             }
+
+            var address = _mapper.Map<Address>(addressDto);
 
             _context.Entry(address).State = EntityState.Modified;
             try
@@ -92,13 +111,15 @@ namespace PharmaCheck.Controllers
         /// <summary>
         /// Insert new address.
         /// </summary>
-        /// <param name="address"></param>
+        /// <param name="addressDto"></param>
         /// <returns></returns>
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Address>> PostAddress(Address address)
+        public async Task<ActionResult<Address>> PostAddress(InsertAddressVM addressDto)
         {
+            var address = _mapper.Map<Address>(addressDto);
+
             _context.Addresses.Add(address);
             await _context.SaveChangesAsync();
 

@@ -4,6 +4,9 @@ export interface LoginModel {
 }
 
 export interface RegisterModel {
+    firstname: string;
+    lastname: string;
+    phonenumber: string;
     email: string;
     password: string;
 }

@@ -14,8 +14,6 @@ using System.Threading.Tasks;
 namespace PharmaCheck.Controllers
 {
     [AllowAnonymous]
-    [Route("api/[controller]")]
-    [ApiController]
     public class AccountController : Controller
     {
         private readonly UserManager<IdentityUser> userManager;
@@ -35,7 +33,7 @@ namespace PharmaCheck.Controllers
         [HttpPost]
         public async Task<ActionResult> Register([FromBody] RegisterModel registerModel)
         {
-            IdentityUser identityUser = new IdentityUser() { Email = registerModel.Email, UserName = registerModel.Email };
+            IdentityUser identityUser = new IdentityUser() { Email = registerModel.Email, UserName = String.Concat(registerModel.FirstName,registerModel.LastName), PhoneNumber = registerModel.PhoneNumber,  };
 
             IdentityResult result = await userManager.CreateAsync(identityUser, registerModel.Password);
 

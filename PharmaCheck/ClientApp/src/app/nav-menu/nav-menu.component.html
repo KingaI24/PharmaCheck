@@ -1,9 +1,12 @@
 <header>
   <nav
-    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark text-light bg-dark border-bottom box-shadow mb-3"
   >
     <div class="container">
-      <a class="navbar-brand" [routerLink]="['/']">PharmaCheck</a>
+        <a class="navbar-brand" [routerLink]="['/']">
+            <span style="color:red">Pharma</span>Check
+            <img src="assets/pill.png" alt="Logo" style="width:30px;">
+        </a>
       <button
         class="navbar-toggler"
         type="button"
@@ -19,25 +22,50 @@
         class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
         [ngClass]="{ show: isExpanded }"
       >
-        <ul class="navbar-nav flex-grow">
-          <li
-            class="nav-item"
-            [routerLinkActive]="['link-active']"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
-            <a class="nav-link text-dark" [routerLink]="['/']">Home</a>
-          </li>
-          <li class="nav-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link text-dark" [routerLink]="['/counter']"
-              >Counter</a
-            >
-          </li>
-          <li class="nav-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link text-dark" [routerLink]="['/fetch-data']"
-              >Fetch data</a
-            >
-          </li>
-        </ul>
+          <ul class="navbar-nav flex-grow">
+              <li class="nav-item"
+                  [routerLinkActive]="['link-active']"
+                  [routerLinkActiveOptions]="{ exact: true }">
+                  <a class="nav-link text-white" [routerLink]="['/']">Home</a>
+              </li>
+
+              <div *ngIf="isLoggedIn">
+                  <li class="nav-item" [routerLinkActive]="['link-active']">
+                      <a class="nav-link text-white" [routerLink]="['/pharmacies']">Pharmacies</a>
+                  </li>
+              </div>
+
+              <div *ngIf="isLoggedIn">
+                  <li class="nav-item" [routerLinkActive]="['link-active']">
+                      <a class="nav-link text-white" [routerLink]="['/products']">Products</a>
+                  </li>
+              </div>
+
+              <div *ngIf="isLoggedIn">
+                  <li class="nav-item" [routerLinkActive]="['link-active']">
+                      <a class="nav-link text-white" [routerLink]="['/supplies']">Supplies</a>
+                  </li>
+              </div>
+
+              <div *ngIf="!isLoggedIn">
+                  <li class="nav-item" [routerLinkActive]="['link-active']">
+                      <a class="nav-link text-white" [routerLink]="['/login']">Login</a>
+                  </li>
+              </div>
+
+              <div *ngIf="!isLoggedIn">
+                  <li class="nav-item" [routerLinkActive]="['link-active']">
+                      <a class="nav-link text-white" [routerLink]="['/registration']">Registration</a>
+                  </li>
+              </div>
+
+              <div *ngIf="isLoggedIn">
+                  <li class="nav-item">
+                      <a class="nav-link text-white" [routerLink]="" (click)="logoutUser()"> Logout </a>
+                  </li>
+              </div>
+
+          </ul>
       </div>
     </div>
   </nav>

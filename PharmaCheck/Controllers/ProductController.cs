@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmaCheck.Data;
 using PharmaCheck.Models;
+using PharmaCheck.ViewModel.Collections;
+using PharmaCheck.ViewModels;
 
 namespace PharmaCheck.Controllers
 {
@@ -15,10 +18,12 @@ namespace PharmaCheck.Controllers
     public class ProductController : Controller
     {
         private readonly PharmaCheckContext _context;
+        private readonly IMapper _mapper;
 
-        public ProductController(PharmaCheckContext context)
+        public ProductController(PharmaCheckContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Product
@@ -27,11 +32,28 @@ namespace PharmaCheck.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
+            [FromQuery] string? substance = null,
+            [FromQuery] int page = 0,
+            [FromQuery] int itemsPerPage = 3)
         {
-            return await _context.Products
+            IQueryable<Product> result = _context.Products;
+            if (substance != null)
+            {
+                result = result.Where(f => substance == f.ActiveSubstance);
+            }
+
+            var repo = await result
                 .Include(t => t.Supplies)
+                .Skip(page * itemsPerPage)
+                .Take(itemsPerPage)
                 .ToListAsync();
+
+            var returnTasks = _mapper.Map<IEnumerable<ShowProductVM>>(repo);
+            var paginatedList = new PaginatedList<ShowProductVM>(page, await result.CountAsync(), itemsPerPage);
+            paginatedList.Items.AddRange(returnTasks); //addrange -> to add collections
+
+            return Ok(paginatedList);
         }
 
         // GET: api/product/5
