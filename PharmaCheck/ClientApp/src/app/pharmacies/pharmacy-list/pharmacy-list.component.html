@@ -1,0 +1,50 @@
+<mat-paginator [length]="pharmacies?.totalItems"
+               [pageSize]="pharmacies?.itemsPerPage"
+               [pageSizeOptions]="[3,6]"
+               (page)="pageEvent = loadPharmacies($event)">
+</mat-paginator>
+
+<table mat-table [dataSource]="pharmacies?.items" class="mat-elevation-z8">
+
+    <!--- Note that these columns can be defined in any order.
+          The actual rendered columns are set as a property on the row definition" -->
+    <!-- Position Column -->
+    <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef style="width:21%"> Name </th>
+        <td mat-cell *matCellDef="let pharmacy"> {{pharmacy.name}} </td>
+    </ng-container>
+
+    <!-- Action Column -->
+    <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef style="width:10%"> Action </th>
+        <td mat-cell *matCellDef="let pharmacy">
+            <button mat-icon-button matTooltip="Edit" [matTooltipPosition]="'after'">
+                <mat-icon aria-label="Example icon-button with a heart icon" [routerLink]="['../edit', pharmacy.id]">edit</mat-icon>
+            </button>
+
+            <button mat-icon-button matTooltip="Delete" [matTooltipPosition]="'after'">
+                <mat-icon aria-label="Example icon-button with a heart icon " (click)="delete(pharmacy)">delete</mat-icon>
+            </button>
+
+        </td>
+    </ng-container>
+
+    <!-- Address Column -->
+    <ng-container matColumnDef="address">
+        <th mat-header-cell *matHeaderCellDef style="width:23%"> Address </th>
+        <td mat-cell *matCellDef="let pharmacy">
+            <mat-list *ngFor="let address of pharmacy.addresses">
+                <mat-list-item>{{address.description}}</mat-list-item>
+                <mat-divider></mat-divider>
+            </mat-list>
+        </td>
+    </ng-container>
+
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+
+<div class="example-button-row">
+    <button mat-raised-button [routerLink]='["../edit"]' class="btn btn-dark"><b>+</b></button>
+</div>

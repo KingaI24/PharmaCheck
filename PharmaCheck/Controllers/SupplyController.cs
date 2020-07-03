@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmaCheck.Data;
 using PharmaCheck.Models;
+using PharmaCheck.ViewModel.Collections;
+using PharmaCheck.ViewModels.Collections;
 
 namespace PharmaCheck.Controllers
 {
@@ -15,10 +18,12 @@ namespace PharmaCheck.Controllers
     public class SupplyController : Controller
     {
         private readonly PharmaCheckContext _context;
+        private readonly IMapper _mapper;
 
-        public SupplyController(PharmaCheckContext context)
+        public SupplyController(PharmaCheckContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/supply?prodid=5&pharmid=5
@@ -27,9 +32,11 @@ namespace PharmaCheck.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Supply>>> GetSupplies(
+        public async Task<IActionResult> GetSupplies(
             [FromQuery] long? ProdId = null,
-            [FromQuery] long? PharmId = null)
+            [FromQuery] long? PharmId = null,
+            [FromQuery] int page = 0,
+            [FromQuery] int itemsPerPage = 3)
         {
             IQueryable<Supply> result = _context.Supplies;
             
@@ -47,7 +54,11 @@ namespace PharmaCheck.Controllers
                 .Include(t => t.Pharmacy)
                 .ToListAsync();
 
-            return Ok(supplyRepo);
+            var returnTasks = _mapper.Map<IEnumerable<ShowSupplyVM>>(supplyRepo);
+            var paginatedList = new PaginatedList<ShowSupplyVM>(page, await result.CountAsync(), itemsPerPage);
+            paginatedList.Items.AddRange(returnTasks); //addrange -> to add collections
+
+            return Ok(paginatedList);
         }
 
 

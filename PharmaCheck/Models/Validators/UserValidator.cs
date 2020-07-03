@@ -18,9 +18,9 @@ namespace PharmaCheck.Models.Validators
             RuleFor(x => x.Password)
                 .Password();
 
-            RuleFor(x => x.ConfirmPassword)
-                .Equal(x => x.Password).WithMessage("Passwords are not the same")
-                .Password();
+            //RuleFor(x => x.ConfirmPassword)
+            //    .Equal(x => x.Password).WithMessage("Passwords are not the same")
+            //    .Password();
         }
     }
     public static class RuleBuilderExtensions

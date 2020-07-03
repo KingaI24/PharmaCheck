@@ -18,7 +18,8 @@ export class SecurityService {
     register(registerModel: RegisterModel) {
         return new Observable<Token>((obs: Observer<Token>) => {
             this.httpClient.post<Token>(`${this.applicationService.baseUrl}Account/Register`, registerModel).subscribe(token => {
-
+                console.log(registerModel);
+                console.log(token);
                 this.tokenService.saveToken(token);
 
                 obs.next(token);

@@ -25,6 +25,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCardModule } from '@angular/material/card';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 
 @NgModule({
@@ -53,7 +54,8 @@ import { MatCardModule } from '@angular/material/card';
         MatPaginatorModule,
         MatProgressSpinnerModule,
         MatProgressBarModule,
-        MatCardModule
+        MatCardModule,
+        MatAutocompleteModule
     ],
     exports: [
         MatSlideToggleModule,
@@ -79,7 +81,8 @@ import { MatCardModule } from '@angular/material/card';
         MatPaginatorModule,
         MatProgressSpinnerModule,
         MatProgressBarModule,
-        MatCardModule
+        MatCardModule,
+        MatAutocompleteModule
     ],
 })
 

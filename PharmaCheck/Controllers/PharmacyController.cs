@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmaCheck.Data;
 using PharmaCheck.Models;
+using PharmaCheck.ViewModel.Collections;
+using PharmaCheck.ViewModels;
 
 namespace PharmaCheck.Controllers
 {
@@ -15,10 +18,13 @@ namespace PharmaCheck.Controllers
     public class PharmacyController : Controller
     {
         private readonly PharmaCheckContext _context;
+        private readonly IMapper _mapper;
 
-        public PharmacyController(PharmaCheckContext context)
+        public PharmacyController(PharmaCheckContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
+
         }
 
         // GET: api/pharmacy
@@ -27,12 +33,32 @@ namespace PharmaCheck.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Pharmacy>>> GetPharmacies()
+        public async Task<IActionResult> GetPharmacies(
+             [FromQuery] string? name = null,
+             [FromQuery] int page = 0,
+             [FromQuery] int itemsPerPage = 3
+            )
         {
-            return await _context.Pharmacies
+
+            IQueryable<Pharmacy> result = _context.Pharmacies;
+            if (name != null)
+            {
+                result = result.Where(f => name == f.Name);
+            }
+
+            var tasksRepo = await result
                 .Include(t => t.Addresses)
                 .Include(t => t.Supplies)
+                .Skip(page * itemsPerPage)
+                .Take(itemsPerPage)
                 .ToListAsync();
+
+            var returnTasks = _mapper.Map<IEnumerable<ShowPharmacyVM>>(tasksRepo);
+            var paginatedList = new PaginatedList<ShowPharmacyVM>(page, await result.CountAsync(), itemsPerPage);
+            paginatedList.Items.AddRange(returnTasks); //addrange -> to add collections
+
+            return Ok(paginatedList);
+
         }
 
         // GET: api/pharmacy/5

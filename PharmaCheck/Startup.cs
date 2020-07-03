@@ -14,6 +14,11 @@ using System.Reflection;
 using System.IO;
 using System;
 using FluentValidation.AspNetCore;
+using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace PharmaCheck
 {
@@ -41,6 +46,13 @@ namespace PharmaCheck
                     options.JsonSerializerOptions.IgnoreNullValues = true;
                 });
 
+            // Microsoft.AspNetCore.Identity.EntityFrameworkCore
+            services.AddIdentity<IdentityUser, IdentityRole>()
+               .AddDefaultTokenProviders()
+               .AddEntityFrameworkStores<PharmaCheckContext>();
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
 
             services.AddSwaggerGen(c =>
@@ -59,6 +71,7 @@ namespace PharmaCheck
                     }
                 });
 
+
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -66,10 +79,37 @@ namespace PharmaCheck
 
             });
 
+            //Microsoft.AspNetCore.Authentication.JwtBearer
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = Configuration.GetValue<string>("Authentication:Issuer"),
+                        ValidAudience = Configuration.GetValue<string>("Authentication:Issuer"),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("Authentication:Secret"))),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
             services.AddSpaStaticFiles(configuration =>
             {
-                configuration.RootPath = "ClientApp/dist";
+                configuration.RootPath = "wwwroot/dist";
             });
+
+            services
+                .AddMvc(options =>
+                {
+                    //AuthorizationPolicy policy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build();
+
+                    //options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter(policy));
+
+                    options.EnableEndpointRouting = false;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -92,6 +132,9 @@ namespace PharmaCheck
             app.UseHttpsRedirection();
             app.UseSpaStaticFiles();
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
